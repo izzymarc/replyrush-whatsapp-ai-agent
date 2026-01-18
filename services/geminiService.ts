@@ -1,6 +1,6 @@
 
 import { GoogleGenAI, Type } from "@google/genai";
-import { Business, Product, FAQ, Order } from "../types";
+import { Business, Product, FAQ } from "../types";
 
 export const generateAIResponse = async (
   message: string,
@@ -17,14 +17,14 @@ export const generateAIResponse = async (
 
   const systemPrompt = `
 You are a professional, helpful, and polite Nigerian AI Sales Assistant for "${context.business.name}".
-Your tone should be "Nigerian-friendly" (polite, respects the customer, uses phrases like "boss", "customer", "good day", but stays professional).
+Your tone should be "${context.business.tone}".
 
 Business Info:
 - Name: ${context.business.name}
 - WhatsApp: ${context.business.whatsapp}
 - Address: ${context.business.address}
 - Working Hours: ${context.business.workingHours}
-- Delivery Fee: ₦${context.business.deliveryFee} (flat rate)
+- Delivery Fee: ₦${context.business.deliveryFee}
 - Payment: ${context.business.bankDetails}
 
 Product Catalog:
@@ -34,34 +34,29 @@ FAQs:
 ${faqContext}
 
 Rules:
-1. Never hallucinate prices or products. If something isn't listed, say we don't have it or suggest the closest alternative.
-2. If a customer wants to order:
-   - Check if the item is in stock.
-   - Collect their Name, Delivery Address, and specific item/quantity if missing.
-   - Once you have all details, provide an order summary including the delivery fee and the payment instructions.
-3. If a customer is angry or the request is too complex, apologize and say "I'll connect you to one of our human staff shortly to resolve this."
-4. Keep messages short and easy to read on WhatsApp.
-5. If you identify a clear intent to buy and all fields (Name, Address, Item) are present, you MUST return a structured response for the order system.
-
-Detecting Order Intent:
-You should respond with JSON when the user is finalizing an order.
+1. Never hallucinate prices.
+2. Order Extraction: Extract customerName, deliveryAddress, and items.
+3. Use your search tool to answer questions about Nigerian context (traffic, weather, holidays) if it helps provide better service.
+4. Response Format: Always return the JSON structure specified.
 `;
 
   try {
     const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
+      model: "gemini-3-pro-preview",
       contents: [
         ...history.map(h => ({ role: h.role === 'user' ? 'user' : 'model', parts: [{ text: h.text }] })),
         { role: 'user', parts: [{ text: message }] }
       ],
       config: {
         systemInstruction: systemPrompt,
+        thinkingConfig: { thinkingBudget: 4000 },
+        tools: [{ googleSearch: {} }],
         responseMimeType: "application/json",
         responseSchema: {
           type: Type.OBJECT,
           properties: {
-            reply_message: { type: Type.STRING, description: "The message to send back to the user on WhatsApp." },
-            order_intent: { type: Type.BOOLEAN, description: "Set to true if the user is confirming a specific order." },
+            reply_message: { type: Type.STRING },
+            order_intent: { type: Type.BOOLEAN },
             extracted_order_fields: {
               type: Type.OBJECT,
               properties: {
@@ -89,7 +84,7 @@ You should respond with JSON when the user is finalizing an order.
   } catch (error) {
     console.error("AI Generation Error:", error);
     return {
-      reply_message: "Eyah, sorry boss. My network is acting up. Could you please send that again?",
+      reply_message: "Eyah, boss. Network is slow on my end. Abeg, try again.",
       order_intent: false
     };
   }

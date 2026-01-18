@@ -8,7 +8,8 @@ import {
   ShoppingCart, 
   Settings, 
   LogOut,
-  Play
+  Play,
+  Zap
 } from 'lucide-react';
 
 interface SidebarItemProps {
@@ -21,14 +22,14 @@ interface SidebarItemProps {
 const SidebarItem: React.FC<SidebarItemProps> = ({ icon: Icon, label, active, onClick }) => (
   <button
     onClick={onClick}
-    className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+    className={`w-full flex items-center space-x-3 px-4 py-2.5 rounded-xl transition-all duration-200 ${
       active 
-        ? 'bg-emerald-600 text-white' 
-        : 'text-slate-600 hover:bg-emerald-50 hover:text-emerald-700'
+        ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200' 
+        : 'text-slate-500 hover:bg-slate-100 hover:text-slate-900'
     }`}
   >
-    <Icon size={20} />
-    <span className="font-medium">{label}</span>
+    <Icon size={18} />
+    <span className="font-semibold text-sm">{label}</span>
   </button>
 );
 
@@ -41,27 +42,28 @@ interface LayoutProps {
 
 export const Layout: React.FC<LayoutProps> = ({ children, currentPage, setCurrentPage, onLogout }) => {
   const menuItems = [
-    { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { id: 'products', label: 'Products', icon: Package },
-    { id: 'faqs', label: 'FAQs', icon: HelpCircle },
-    { id: 'orders', label: 'Orders', icon: ShoppingCart },
-    { id: 'conversations', label: 'Conversations', icon: MessageSquare },
-    { id: 'simulator', label: 'Test Chat (Sim)', icon: Play },
-    { id: 'settings', label: 'Settings', icon: Settings },
+    { id: 'dashboard', label: 'Overview', icon: LayoutDashboard },
+    { id: 'products', label: 'Inventory', icon: Package },
+    { id: 'faqs', label: 'Knowledge', icon: HelpCircle },
+    { id: 'orders', label: 'Sales', icon: ShoppingCart },
+    { id: 'conversations', label: 'Inbox', icon: MessageSquare },
+    { id: 'simulator', label: 'AI Sandbox', icon: Play },
+    { id: 'settings', label: 'Business Settings', icon: Settings },
   ];
 
   return (
-    <div className="flex h-screen bg-slate-50">
+    <div className="flex h-screen bg-[#F8FAFC]">
       {/* Sidebar */}
-      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col p-4">
-        <div className="flex items-center space-x-2 px-2 py-6 mb-4">
-          <div className="bg-emerald-600 text-white p-2 rounded-lg">
-            <ShoppingCart size={24} />
+      <aside className="w-64 bg-white border-r border-slate-200 flex flex-col p-6 shadow-[4px_0_24px_rgba(0,0,0,0.02)]">
+        <div className="flex items-center space-x-3 mb-10 px-2">
+          <div className="bg-indigo-600 text-white p-2 rounded-xl shadow-inner">
+            <Zap size={22} fill="currentColor" />
           </div>
-          <span className="text-xl font-bold text-slate-800 tracking-tight">ReplyRush</span>
+          <span className="text-xl font-bold text-slate-900 tracking-tight">ReplyRush</span>
         </div>
 
-        <nav className="flex-1 space-y-1">
+        <nav className="flex-1 space-y-1.5">
+          <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-4 px-4">Menu</p>
           {menuItems.map((item) => (
             <SidebarItem
               key={item.id}
@@ -73,10 +75,10 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, setCurren
           ))}
         </nav>
 
-        <div className="pt-4 border-t border-slate-200">
+        <div className="pt-6 border-t border-slate-100">
           <SidebarItem
             icon={LogOut}
-            label="Logout"
+            label="Sign Out"
             active={false}
             onClick={onLogout}
           />
@@ -85,7 +87,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, currentPage, setCurren
 
       {/* Main Content */}
       <main className="flex-1 overflow-y-auto">
-        <div className="max-w-6xl mx-auto p-8">
+        <div className="max-w-7xl mx-auto p-10">
           {children}
         </div>
       </main>

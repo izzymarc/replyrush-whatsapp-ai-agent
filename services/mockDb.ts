@@ -111,10 +111,24 @@ export const updateOrderStatus = (id: string, status: OrderStatus) => {
   saveDb(db);
 };
 
+export const toggleConversationHandling = (id: string, mode: 'ai' | 'human') => {
+  const db = getDb();
+  const conv = db.conversations.find(c => c.id === id);
+  if (conv) {
+    conv.handledBy = mode;
+    saveDb(db);
+  }
+};
+
 export const updateConversation = (conv: Conversation) => {
   const db = getDb();
   const index = db.conversations.findIndex(c => c.customerWhatsapp === conv.customerWhatsapp);
-  if (index > -1) db.conversations[index] = conv;
-  else db.conversations.push(conv);
+  if (index > -1) {
+    // Preserve handledBy state unless explicitly updated elsewhere
+    const currentHandledBy = db.conversations[index].handledBy;
+    db.conversations[index] = { ...conv, handledBy: currentHandledBy };
+  } else {
+    db.conversations.push(conv);
+  }
   saveDb(db);
 };
